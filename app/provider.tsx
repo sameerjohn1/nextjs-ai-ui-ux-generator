@@ -22,7 +22,7 @@ function Provider({ children }: any) {
   };
   return (
     <UserDetailContext.Provider value={{ useDetail, setUserDetail }}>
-      <div>{children}</div>;
+      <div>{children}</div>
     </UserDetailContext.Provider>
   );
 }
