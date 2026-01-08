@@ -1,9 +1,12 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { UserDetailContext } from "@/context/UserDetailContext";
 
 function Provider({ children }: any) {
+  const [useDetail, setUserDetail] = useState();
+
   useEffect(() => {
     CreateNewUser();
   }, []);
@@ -12,11 +15,16 @@ function Provider({ children }: any) {
     try {
       const result = await axios.post("/api/user", {});
       console.log("New User Created", result.data);
+      setUserDetail(result.data);
     } catch (error) {
       console.error("Error creating user:", error);
     }
   };
-  return <div>{children}</div>;
+  return (
+    <UserDetailContext.Provider value={{ useDetail, setUserDetail }}>
+      <div>{children}</div>;
+    </UserDetailContext.Provider>
+  );
 }
 
 export default Provider;
