@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
+import Provider from "./provider";
 
 const appFonts = DM_Sans({
   subsets: ["latin"],
@@ -20,7 +21,9 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={appFonts.className}>{children}</body>
+        <body className={appFonts.className}>
+          <Provider>{children}</Provider>
+        </body>
       </html>
     </ClerkProvider>
   );
