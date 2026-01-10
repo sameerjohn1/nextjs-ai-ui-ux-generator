@@ -16,7 +16,7 @@ import {
   InputGroupButton,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
-import { Send } from "lucide-react";
+import { Loader, Send } from "lucide-react";
 
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,19 +25,37 @@ import { suggestions } from "@/data/constant";
 import { useUser } from "@clerk/nextjs";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import { randomUUID } from "crypto";
 
 function Hero() {
   const [userInput, setUserInput] = useState<string>();
   const [device, setDevice] = useState<string>("website");
   const { user } = useUser();
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
-  const onCreateProject = () => {
+  const onCreateProject = async () => {
     if (!user) {
       router.push("/sign-in");
       return;
     }
     //create new project
+    if (!userInput) {
+      return;
+    }
+    setLoading(true);
+    const projectId = crypto.randomUUID();
+    const result = await axios.post("/api/project", {
+      userInput: userInput,
+      device: device,
+      projectId: projectId,
+    });
+
+    console.log("Project created:", result.data);
+    setLoading(false);
+
+    //navigate to project route
   };
   return (
     <div className="p-10 md:px-24 lg:px-48 xl:px-60 mt-12">
@@ -94,12 +112,13 @@ function Hero() {
               </SelectContent>
             </Select>
             <InputGroupButton
+              disabled={loading}
               className="ml-auto"
               size="sm"
               variant="default"
               onClick={() => onCreateProject()}
             >
-              <Send />
+              {loading ? <Loader className="animate-spin" /> : <Send />}
             </InputGroupButton>
           </InputGroupAddon>
         </InputGroup>
