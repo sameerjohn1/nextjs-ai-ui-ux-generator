@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 import {
   Select,
@@ -21,8 +21,24 @@ import { Send } from "lucide-react";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
+import { suggestions } from "@/data/constant";
+import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 function Hero() {
+  const [userInput, setUserInput] = useState<string>();
+  const [device, setDevice] = useState<string>("website");
+  const { user } = useUser();
+  const router = useRouter();
+
+  const onCreateProject = () => {
+    if (!user) {
+      router.push("/sign-in");
+      return;
+    }
+    //create new project
+  };
   return (
     <div className="p-10 md:px-24 lg:px-48 xl:px-60 mt-12">
       <div className="flex justify-center items-center w-full mb-5">
@@ -61,9 +77,14 @@ function Hero() {
             data-slot="input-group-control"
             className="flex field-sizing-content min-h-24 w-full resize-none rounded-md bg-transparent px-3 py-2.5 text-base transition-[color,box-shadow] outline-none md:text-sm"
             placeholder="Enter what design you want to create"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target?.value)}
           />
           <InputGroupAddon align="block-end">
-            <Select defaultValue="website">
+            <Select
+              defaultValue="website"
+              onValueChange={(value) => setDevice(value)}
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
@@ -72,11 +93,31 @@ function Hero() {
                 <SelectItem value="mobile">Mobile</SelectItem>
               </SelectContent>
             </Select>
-            <InputGroupButton className="ml-auto" size="sm" variant="default">
+            <InputGroupButton
+              className="ml-auto"
+              size="sm"
+              variant="default"
+              onClick={() => onCreateProject()}
+            >
               <Send />
             </InputGroupButton>
           </InputGroupAddon>
         </InputGroup>
+      </div>
+
+      <div className="flex gap-5 mt-4 justify-center flex-wrap ">
+        {suggestions.map((suggestion, index) => (
+          <div
+            className="p-2 border rounded-2xl flex flex-col items-center bg-white z-10 cursor-pointer"
+            key={index}
+            onClick={() => setUserInput(suggestion?.description)}
+          >
+            <h2 className="text-lg">{suggestion?.icon}</h2>
+            <h2 className="text-center line-clamp-2 text-sm ">
+              {suggestion?.name}
+            </h2>
+          </div>
+        ))}
       </div>
     </div>
   );
