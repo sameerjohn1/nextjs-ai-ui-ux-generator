@@ -1,12 +1,15 @@
+import { db } from "@/config/db";
 import { openrouter } from "@/config/openRouter";
+import { ProjectTable, ScreenConfigTable } from "@/config/schema";
 import { APP_LAYOUT_CONFIG_PROMPT } from "@/data/Prompt";
+import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   const { userInput, deviceType, projectId } = await req.json();
 
   const aiResult = await openrouter.chat.send({
-    model: "openai/gpt-5.1-codex-mini",
+    model: "nvidia/nemotron-3-nano-30b-a3b:free",
     messages: [
       {
         role: "system",
@@ -30,8 +33,33 @@ export async function POST(req: NextRequest) {
     stream: false,
   });
 
-  //save to database
-  console.log("AI Result:", aiResult);
+  const JSONAiResult = JSON.parse(
+    aiResult?.choices[0]?.message?.content as string
+  );
 
-  return NextResponse.json(aiResult?.choices[0]?.message?.content);
+  if (JSONAiResult) {
+    // Update Project Tablw with Project Name
+    await db
+      .update(ProjectTable)
+      .set({
+        projectVisualDescription: JSONAiResult?.projectVisualDescription,
+        projectName: JSONAiResult?.projectName,
+        theme: JSONAiResult?.theme,
+      })
+      .where(eq(ProjectTable.projectId, projectId as string));
+
+    // Insert screen cofig
+    JSONAiResult.screens?.forEach(async (screen: any) => {
+      const result = await db.insert(ScreenConfigTable).values({
+        projectId: projectId,
+        purpose: screen?.purpose,
+        screenDescription: screen?.layoutDescription,
+        screenId: screen?.id,
+        screenName: screen?.name,
+      });
+    });
+    return NextResponse.json(JSONAiResult);
+  } else {
+    NextResponse.json({ msg: "Internal Server Error" });
+  }
 }

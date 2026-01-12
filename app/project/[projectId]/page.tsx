@@ -52,6 +52,7 @@ function ProjectCanvasPlayground() {
     });
 
     console.log(result.data);
+    GetProjectDetail();
 
     setLoading(false);
   };
@@ -74,7 +75,7 @@ function ProjectCanvasPlayground() {
         )}
 
         {/* Settings */}
-        <SettingsSection />
+        <SettingsSection projectDetail={projectDetail} />
 
         {/* Canvas */}
       </div>
