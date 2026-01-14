@@ -37,6 +37,8 @@ function ProjectCanvasPlayground() {
   useEffect(() => {
     if (projectDetail && screenConfig && screenConfig.length === 0) {
       generateScreenConfig();
+    } else if (projectDetail && screenConfig) {
+      GenerateScreenUIUX();
     }
   }, [projectDetail && screenConfig]);
 
@@ -53,6 +55,30 @@ function ProjectCanvasPlayground() {
 
     console.log(result.data);
     GetProjectDetail();
+
+    setLoading(false);
+  };
+
+  const GenerateScreenUIUX = async () => {
+    setLoading(true);
+
+    for (let index = 0; index < screenConfig.length; index++) {
+      const screen = screenConfig[index];
+      if (screen?.code) continue;
+      setLoadingMsg(`Generating Screen` + index + 1);
+
+      const result = await axios.post("/api/generate-screen-ui", {
+        projectId,
+        screenId: screen?.screenId,
+        screenName: screen?.screenName,
+        purpose: screen?.purpose,
+        screenDescription: screen?.screenDescription,
+      });
+
+      setScreenConfig((prev) =>
+        prev.map((item, i) => (i === index ? result.data : item))
+      );
+    }
 
     setLoading(false);
   };
