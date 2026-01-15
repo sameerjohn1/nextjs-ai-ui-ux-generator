@@ -1,20 +1,26 @@
 "use client";
 
-import Reac, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ProjectHeader from "./_shared/ProjectHeader";
 import SettingsSection from "./_shared/SettingsSection";
 import axios from "axios";
 import { useParams } from "next/navigation";
 import { ProjectType, ScreenConfig } from "@/type/types";
 import { Loader2Icon } from "lucide-react";
+import Canvas from "./_shared/Canvas";
 
 function ProjectCanvasPlayground() {
   const { projectId } = useParams();
 
   const [projectDetail, setProjectDetail] = useState<ProjectType>();
+  const [screenConfigOriginal, setScreenConfigOriginal] = useState<
+    ScreenConfig[]
+  >([]);
   const [screenConfig, setScreenConfig] = useState<ScreenConfig[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [loadingMsg, setLoadingMsg] = useState("Loading");
+  const isGenerating = useRef(false);
 
   useEffect(() => {
     projectId && GetProjectDetail();
@@ -27,6 +33,7 @@ function ProjectCanvasPlayground() {
     console.log(result.data);
 
     setProjectDetail(result?.data?.projectDetail);
+    setScreenConfigOriginal(result?.data?.screenConfig);
     setScreenConfig(result?.data?.screenConfig);
     // if (result?.data?.screenConfig.length === 0) {
     //   generateScreenConfig();
@@ -35,59 +42,75 @@ function ProjectCanvasPlayground() {
   };
 
   useEffect(() => {
-    if (projectDetail && screenConfig && screenConfig.length === 0) {
-      generateScreenConfig();
-    } else if (projectDetail && screenConfig) {
-      GenerateScreenUIUX();
+    if (projectDetail && screenConfigOriginal) {
+      if (screenConfigOriginal.length === 0) {
+        generateScreenConfig();
+      } else if (screenConfigOriginal.some((screen) => !screen.code)) {
+        GenerateScreenUIUX();
+      }
     }
-  }, [projectDetail && screenConfig]);
+  }, [projectDetail, screenConfigOriginal]);
 
   const generateScreenConfig = async () => {
+    if (isGenerating.current) return;
+    isGenerating.current = true;
     // console.log("Generating Config");
     setLoading(true);
     setLoadingMsg("Generating Screen Config...");
 
-    const result = await axios.post(`/api/generate-config`, {
-      projectId: projectId,
-      deviceType: projectDetail?.device,
-      userInput: projectDetail?.userInput,
-    });
+    try {
+      const result = await axios.post(`/api/generate-config`, {
+        projectId: projectId,
+        deviceType: projectDetail?.device,
+        userInput: projectDetail?.userInput,
+      });
 
-    console.log(result.data);
-    GetProjectDetail();
+      console.log(result.data);
+      await GetProjectDetail();
+    } catch (error) {
+      console.error("Error generating screen config:", error);
+    }
 
     setLoading(false);
+    isGenerating.current = false;
   };
 
   const GenerateScreenUIUX = async () => {
+    if (isGenerating.current) return;
+    isGenerating.current = true;
     setLoading(true);
 
     for (let index = 0; index < screenConfig.length; index++) {
       const screen = screenConfig[index];
       if (screen?.code) continue;
-      setLoadingMsg(`Generating Screen` + index + 1);
+      setLoadingMsg(`Generating Screen ` + (index + 1));
 
-      const result = await axios.post("/api/generate-screen-ui", {
-        projectId,
-        screenId: screen?.screenId,
-        screenName: screen?.screenName,
-        purpose: screen?.purpose,
-        screenDescription: screen?.screenDescription,
-      });
+      try {
+        const result = await axios.post("/api/generate-screen-ui", {
+          projectId,
+          screenId: screen?.screenId,
+          screenName: screen?.screenName,
+          purpose: screen?.purpose,
+          screenDescription: screen?.screenDescription,
+        });
 
-      setScreenConfig((prev) =>
-        prev.map((item, i) => (i === index ? result.data : item))
-      );
+        setScreenConfig((prev) =>
+          prev.map((item, i) => (i === index ? result.data : item))
+        );
+      } catch (error) {
+        console.error("Error generating screen:", error);
+      }
     }
 
     setLoading(false);
+    isGenerating.current = false;
   };
 
   return (
     <div>
       <ProjectHeader />
 
-      <div>
+      <div className="flex">
         {loading && (
           <div
             className="p-3 absolute bg-blue-300/20 
@@ -104,6 +127,7 @@ function ProjectCanvasPlayground() {
         <SettingsSection projectDetail={projectDetail} />
 
         {/* Canvas */}
+        <Canvas projectDetail={projectDetail} screenConfig={screenConfig} />
       </div>
     </div>
   );
