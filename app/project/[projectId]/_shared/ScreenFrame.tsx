@@ -66,11 +66,11 @@ function ScreenFrame({
       onResizeStart={() => setPanningEnabled(false)}
       onResizeStop={() => setPanningEnabled(true)}
     >
-      <div className="drag-handle flex gap-2 items-center cursor-move bg-gray-100 p-2">
+      <div className="drag-handle flex gap-2 items-center cursor-move bg-white rounded-lg p-4">
         <GripVertical className="text-gray-500 h-4 w-4" /> Drag Here
       </div>
       <iframe
-        className="w-full h-[calc(100%-40px)] bg-white"
+        className="w-full h-[calc(100%-40px)] bg-white rounded-2xl mt-3"
         sandbox="allow-same-origin allow-scripts"
         srcDoc={html}
       />
