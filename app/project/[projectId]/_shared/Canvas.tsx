@@ -16,9 +16,9 @@ function Canvas({ projectDetail, screenConfig, loading }: Props) {
 
   const isMobile = projectDetail?.device == "mobile";
 
-  const SCREEN_WIDTH = isMobile ? 400 : 200;
+  const SCREEN_WIDTH = isMobile ? 400 : 1200;
   const SCREEN_HEIGHT = isMobile ? 800 : 800;
-  const GAP = isMobile ? 10 : 70;
+  const GAP = isMobile ? 10 : 10;
 
   return (
     <div
@@ -41,7 +41,7 @@ function Canvas({ projectDetail, screenConfig, loading }: Props) {
         panning={{ disabled: !panningEnabled }}
       >
         <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
-          {screenConfig.map((screen, index) => (
+          {screenConfig?.map((screen, index) => (
             <ScreenFrame
               x={index * (SCREEN_WIDTH + GAP)}
               y={0}

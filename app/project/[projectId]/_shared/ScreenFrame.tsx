@@ -70,8 +70,8 @@ function ScreenFrame({
         <GripVertical className="text-gray-500 h-4 w-4" /> Drag Here
       </div>
       <iframe
-        className="w-full h=[calc(100%-40px)] bg-white"
-        sandbox="allow-same-origin allow-scripts allow-forms"
+        className="w-full h-[calc(100%-40px)] bg-white"
+        sandbox="allow-same-origin allow-scripts"
         srcDoc={html}
       />
     </Rnd>
