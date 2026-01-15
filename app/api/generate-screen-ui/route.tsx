@@ -24,6 +24,8 @@ export async function POST(req: NextRequest) {
   try {
     const aiResult = await openrouter.chat.send({
       model: "nvidia/nemotron-3-nano-30b-a3b:free",
+      //   qwen/qwen3-coder:free
+
       messages: [
         {
           role: "system",
