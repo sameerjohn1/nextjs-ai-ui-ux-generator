@@ -13,7 +13,11 @@ function ProjectCanvasPlayground() {
   const { projectId } = useParams();
 
   const [projectDetail, setProjectDetail] = useState<ProjectType>();
+  const [screenConfigOriginal, setScreenConfigOriginal] = useState<
+    ScreenConfig[]
+  >([]);
   const [screenConfig, setScreenConfig] = useState<ScreenConfig[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [loadingMsg, setLoadingMsg] = useState("Loading");
   const isGenerating = useRef(false);
@@ -29,6 +33,7 @@ function ProjectCanvasPlayground() {
     console.log(result.data);
 
     setProjectDetail(result?.data?.projectDetail);
+    setScreenConfigOriginal(result?.data?.screenConfig);
     setScreenConfig(result?.data?.screenConfig);
     // if (result?.data?.screenConfig.length === 0) {
     //   generateScreenConfig();
@@ -37,14 +42,14 @@ function ProjectCanvasPlayground() {
   };
 
   useEffect(() => {
-    if (projectDetail && screenConfig) {
-      if (screenConfig.length === 0) {
+    if (projectDetail && screenConfigOriginal) {
+      if (screenConfigOriginal.length === 0) {
         generateScreenConfig();
-      } else if (screenConfig.some((screen) => !screen.code)) {
+      } else if (screenConfigOriginal.some((screen) => !screen.code)) {
         GenerateScreenUIUX();
       }
     }
-  }, [projectDetail, screenConfig]);
+  }, [projectDetail, screenConfigOriginal]);
 
   const generateScreenConfig = async () => {
     if (isGenerating.current) return;
@@ -122,7 +127,7 @@ function ProjectCanvasPlayground() {
         <SettingsSection projectDetail={projectDetail} />
 
         {/* Canvas */}
-        <Canvas />
+        <Canvas projectDetail={projectDetail} screenConfig={screenConfig} />
       </div>
     </div>
   );

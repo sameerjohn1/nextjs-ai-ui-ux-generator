@@ -3,9 +3,23 @@
 import React, { useState } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import ScreenFrame from "./ScreenFrame";
+import { ProjectType, ScreenConfig } from "@/type/types";
 
-function Canvas() {
+type Props = {
+  projectDetail: ProjectType | undefined;
+  screenConfig: ScreenConfig[];
+  loading?: boolean;
+};
+
+function Canvas({ projectDetail, screenConfig, loading }: Props) {
   const [panningEnabled, setsetPanningEnabled] = useState(true);
+
+  const isMobile = projectDetail?.device == "mobile";
+
+  const SCREEN_WIDTH = isMobile ? 400 : 200;
+  const SCREEN_HEIGHT = isMobile ? 800 : 800;
+  const GAP = isMobile ? 10 : 70;
+
   return (
     <div
       className="w-full h-screen bg-gray-100"
@@ -16,17 +30,29 @@ function Canvas() {
       }}
     >
       <TransformWrapper
-        initialScale={1}
-        initialPositionX={200}
-        initialPositionY={100}
+        initialScale={0.7}
+        minScale={0.7}
+        maxScale={3}
+        initialPositionX={50}
+        initialPositionY={50}
         limitToBounds={false}
         wheel={{ step: 0.8 }}
         doubleClick={{ disabled: false }}
         panning={{ disabled: !panningEnabled }}
       >
         <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
-          <ScreenFrame x={0} y={0} setPanningEnabled={setsetPanningEnabled} />
-          <ScreenFrame x={300} y={0} setPanningEnabled={setsetPanningEnabled} />
+          {screenConfig.map((screen, index) => (
+            <ScreenFrame
+              x={index * (SCREEN_WIDTH + GAP)}
+              y={0}
+              width={SCREEN_WIDTH}
+              height={SCREEN_HEIGHT}
+              key={index}
+              setPanningEnabled={setsetPanningEnabled}
+              htmlCode={screen?.code}
+              projectDetail={projectDetail}
+            />
+          ))}
         </TransformComponent>
       </TransformWrapper>
     </div>
